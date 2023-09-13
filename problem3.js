@@ -28,6 +28,7 @@
  *
  * getRootProperty(object, 999);  //=> null
  * return null if the value isn't found. */
+
 object = {
     r1n: {
         mkg: {
@@ -48,17 +49,34 @@ object = {
 }
 
 function getRootProperty(object, val) {
-    for (let key in object) {
-        if (String(object[key]) === '[object Object]') {
-            getRootProperty(object[key], val)
-        }
-        if (Array.isArray(object[key])) {
-            if (object[key].includes(val)) return key
-        }
 
-    }
-    return null
+    // helper function
+    return (function trackNodepath (object, nodePath = []) {
+
+            for (let key in object) {
+
+                let newNodePath = nodePath.length === 0 ? [key] : nodePath.concat([key])
+
+                if (Array.isArray(object[key])) {
+                    if (object[key].includes(val)) return newNodePath[0]
+                }
+
+                if (typeof (object[key]) === 'object' && object[key] !== null && !Array.isArray(object[key])) {
+                    let result = trackNodepath(object[key], newNodePath)
+
+                    if (result) return result
+                }
+
+            }
+
+            return null
+        }
+    ) (object)
+
 }
-console.log(getRootProperty(object, 9));
 
-
+console.log('expected r1n ', getRootProperty(object, 21));
+console.log('expected r1n ', getRootProperty(object, 250));
+console.log('expected fik ',getRootProperty(object, 92));
+console.log('expected fik ',getRootProperty(object, 29));
+console.log('expected null ',getRootProperty(object, 293353435));
